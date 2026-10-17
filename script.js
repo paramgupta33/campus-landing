@@ -53,10 +53,21 @@ if (hamburger && drawer && overlay) {
 // Theme toggle
 const themeToggle = document.querySelector(".theme-toggle");
 
+// localStorage can throw (Safari with cookies blocked, some privacy modes,
+// sandboxed iframes). Never let that stop the rest of the script.
+const storage = {
+  get(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  },
+  set(key, value) {
+    try { window.localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+  }
+};
+
 function setTheme(theme) {
   const isDark = theme === "dark";
   document.documentElement.classList.toggle("dark", isDark);
-  localStorage.setItem("theme", theme);
+  storage.set("theme", theme);
   if (themeToggle) {
     themeToggle.innerHTML = isDark ? "☾" : "☀";
     themeToggle.setAttribute("aria-pressed", isDark ? "true" : "false");
@@ -64,7 +75,7 @@ function setTheme(theme) {
   }
 }
 
-const savedTheme = localStorage.getItem("theme");
+const savedTheme = storage.get("theme");
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
 setTheme(initialTheme);
